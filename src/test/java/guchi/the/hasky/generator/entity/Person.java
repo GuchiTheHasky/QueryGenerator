@@ -7,7 +7,7 @@ import lombok.*;
 
 import java.io.Serializable;
 
-@Table
+@Table(name = "People")
 @Getter
 @NoArgsConstructor(force = true)
 @AllArgsConstructor
