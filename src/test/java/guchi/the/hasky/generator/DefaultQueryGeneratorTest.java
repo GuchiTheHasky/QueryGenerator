@@ -40,14 +40,14 @@ public class DefaultQueryGeneratorTest {
     }
 
     /**
-     * DELETE FROM table_name WHERE id = id.value.
+     * DELETE FROM table_name WHERE id = ?;
      */
     @Test
     @DisplayName("Test, generate delete by id from class check expected & actual value;")
     public void testGenerateDeleteByIdFromClassCheckExpectedAndActualValue() {
         String id = "123";
         String expected = "DELETE FROM People WHERE id = " + id;
-        String actual = generator.deleteById(person.getClass(), "123");
+        String actual = generator.deleteById(person.getClass(), id);
         assertEquals(expected, actual);
     }
 
@@ -60,20 +60,20 @@ public class DefaultQueryGeneratorTest {
     public void testGenerateInsertObjectCheckExpectedAndActualValue() {
         Person person = new Person(111, "Obi Van Kenobi", 12000);
         String expected = "INSERT INTO People (person_id, person_name, person_salary) VALUES " +
-                "(" + person.getId() + ", " + person.getName() + ", " + person.getSalary() + ")";
+                "(" + person.getId() + ", '" + person.getName() + "', " + person.getSalary() + ")";
         String actual = generator.insert(person);
         assertEquals(expected, actual);
     }
 
     /**
-     * UPDATE table_name SET column = value1,... WHERE id = id_value;
+     * UPDATE table_name SET column = value1,... WHERE id = ?;
      */
     @Test
     @DisplayName("Test, generate update object check expected & actual value.")
     public void testGenerateUpdateObjectCheckExpectedAndActualValue() {
         Person person = new Person("myId", "Obi Van Kenobi", 12000);
-        String expected = "UPDATE People SET person_name = " + person.getName() +
-                ", person_salary = " + person.getSalary() +
+        String expected = "UPDATE People SET person_name = '" + person.getName() +
+                "', person_salary = " + person.getSalary() +
                 " WHERE id = " + person.getId();
         String actual = generator.update(person);
         assertEquals(expected, actual);
@@ -110,7 +110,7 @@ public class DefaultQueryGeneratorTest {
     @DisplayName("Test, extract field value with field name from entity class check expected & actual value.")
     public void testExtractFieldValueWithFieldNameFromEntityClassCheckExpectedAndActualValue() {
         SomeEntity entity = new SomeEntity(976, "Guchi", 32);
-        String expected = "entity_name = Guchi, entity_age = 32";
+        String expected = "entity_name = 'Guchi', entity_age = 32";
         String actual = generator.getFieldsNamesWithContent(entity);
         assertEquals(expected, actual);
     }
@@ -119,7 +119,7 @@ public class DefaultQueryGeneratorTest {
     @DisplayName("Test, extract field value from entity class check expected & actual value.")
     public void testExtractFieldValueFromEntityClassCheckExpectedAndActualValue() {
         SomeEntity entity = new SomeEntity(976, "Guchi", 32);
-        String expected = "976, Guchi, 32";
+        String expected = "976, 'Guchi', 32";
         String actual = generator.getColumnValues(entity);
         assertEquals(expected, actual);
     }

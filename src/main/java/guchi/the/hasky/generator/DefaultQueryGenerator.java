@@ -117,9 +117,9 @@ public class DefaultQueryGenerator implements QueryGenerator {
                 try {
                     fieldValue = decleriedField.get(value);
                 } catch (IllegalAccessException e) {
-                    throw new RuntimeException("Error, you don't have access to read this file.");
+                    throw new RuntimeException("You don't have access to read this file.");
                 }
-                columnValues.add(fieldValue.toString());
+                columnValues.add(quoteIfNeeded(fieldValue).toString());
             }
         }
         return columnValues.toString();
@@ -136,12 +136,13 @@ public class DefaultQueryGenerator implements QueryGenerator {
                 try {
                     id = field.get(value);
                 } catch (IllegalAccessException e) {
-                    throw new RuntimeException("Error, you don't have access to read this file.");
+                    throw new RuntimeException("You don't have access to read this file.");
                 }
             }
         }
         return id;
     }
+
     @DefaultModifierForTests
     String getFieldsNamesWithContent(Object value) {
         StringJoiner fieldNamesWithValues = new StringJoiner("");
@@ -153,13 +154,13 @@ public class DefaultQueryGenerator implements QueryGenerator {
                 Object fieldName = columnAnnotation.name();
                 Object fieldValue = null;
                 try {
-                    fieldValue = decleriedField.get(value);
+                    fieldValue = quoteIfNeeded(decleriedField.get(value));
                 } catch (IllegalAccessException e) {
-                    throw new RuntimeException("Error, you don't have access to read this file.");
+                    throw new RuntimeException("You don't have access to read this file.");
                 }
                 fieldValues.add(fieldName.toString());
                 if (fieldValue == null) {
-                    throw new NullPointerException("Error, current value is null");
+                    throw new NullPointerException("Current value is null.");
                 }
                 fieldValues.add(fieldValue.toString());
             }
@@ -169,6 +170,13 @@ public class DefaultQueryGenerator implements QueryGenerator {
             fieldNamesWithValues.add(fieldValues.toString());
         }
         return fieldNamesWithValues.toString();
+    }
+
+    private Object quoteIfNeeded(Object value) {
+        if (value instanceof String) {
+            return "'" + value + "'";
+        }
+        return value;
     }
 
     private String getTableName(Class<?> type) {
