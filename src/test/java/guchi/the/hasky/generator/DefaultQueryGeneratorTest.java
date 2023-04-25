@@ -26,23 +26,23 @@ public class DefaultQueryGeneratorTest {
     }
 
     /**
-     * SELECT column names FROM table_name WHERE id = ?;
+     * SELECT column names FROM table_name WHERE id=?;
      */
     @Test
     @DisplayName("Test, generate query find person by id from table check expected & actual value.")
     public void testGenerateQueryFindEntityById() {
-        String expected = "SELECT person_id, person_name, person_salary FROM People WHERE id = 123";
+        String expected = "SELECT person_id, person_name, person_salary FROM People WHERE id=123";
         String actual = generator.findById(Person.class, "123");
         assertEquals(expected, actual);
     }
 
     /**
-     * DELETE FROM table_name WHERE id = ?;
+     * DELETE FROM table_name WHERE id=?;
      */
     @Test
     @DisplayName("Test, generate query delete entity by id from class check expected & actual value;")
     public void testGenerateQueryDeleteEntityById() {
-        String expected = "DELETE FROM People WHERE id = 123";
+        String expected = "DELETE FROM People WHERE id=123";
         String actual = generator.deleteById(Person.class, "123");
         assertEquals(expected, actual);
     }
@@ -61,13 +61,13 @@ public class DefaultQueryGeneratorTest {
     }
 
     /**
-     * UPDATE table_name SET column = value1,... WHERE id = ?;
+     * UPDATE table_name SET column = value1,... WHERE id=?;
      */
     @Test
     @DisplayName("Test, generate update object check expected & actual value.")
     public void testGenerateQueryUpdateEntityById() {
         Person person = new Person(777, "Obi Van Kenobi", 12000);
-        String expected = "UPDATE People SET person_name = 'Obi Van Kenobi', person_salary = 12000.0 WHERE id = 777";
+        String expected = "UPDATE People SET person_name='Obi Van Kenobi', person_salary=12000.0 WHERE id=777";
         String actual = generator.update(person);
         assertEquals(expected, actual);
     }
@@ -106,7 +106,7 @@ public class DefaultQueryGeneratorTest {
     @DisplayName("Test, extract field value with field name from entity.")
     public void testExtractFieldValueWithFieldNameFromEntity() {
         SomeEntity entity = new SomeEntity(976, "Guchi", 32);
-        String expected = "entity_name = 'Guchi', entity_age = 32";
+        String expected = "entity_name='Guchi', entity_age=32";
         String actual = generator.getFieldsNamesWithContent(entity);
         assertEquals(expected, actual);
     }
@@ -124,10 +124,10 @@ public class DefaultQueryGeneratorTest {
     @DisplayName("Test, throw exception if entity type is null")
     public void testThrowExceptionIfEntityTypeIsNull() {
         Throwable thrown = assertThrows(NullPointerException.class, () -> {
-            generator.validateEntityNotNul(null);
+            generator.notNullValidation(null);
         });
         assertNotNull(thrown.getMessage());
-        String expected = "Entity can't be null.";
+        String expected = "Value can't be null.";
         String actual = thrown.getMessage();
         assertEquals(expected, actual);
     }

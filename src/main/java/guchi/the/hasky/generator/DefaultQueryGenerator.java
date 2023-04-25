@@ -9,17 +9,17 @@ import lombok.SneakyThrows;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.util.Objects;
+import java.util.LinkedHashMap;
 import java.util.StringJoiner;
 
 public class DefaultQueryGenerator implements QueryGenerator {
     private final String SELECT = "SELECT ";
-    private final String WHERE = " WHERE ";
+    private final String WHERE = " WHERE id=";
     private final String FROM = " FROM ";
 
     @Override
     public String findAll(Class<?> type) {
-        validateEntityNotNul(type);
+        notNullValidation(type);
         String tableName = getTableName(type);
         StringBuilder queryBuilder = new StringBuilder(SELECT);
         String columnNames = getAllColumnNamesFromFields(type);
@@ -31,7 +31,7 @@ public class DefaultQueryGenerator implements QueryGenerator {
 
     @Override
     public String findById(Class<?> type, Serializable id) {
-        validateEntityNotNul(type);
+        notNullValidation(type);
         StringBuilder queryBuilder = new StringBuilder(SELECT);
         String columnNames = getAllColumnNamesFromFields(type);
         queryBuilder.append(columnNames);
@@ -39,27 +39,25 @@ public class DefaultQueryGenerator implements QueryGenerator {
         String tableName = getTableName(type);
         queryBuilder.append(tableName);
         queryBuilder.append(WHERE);
-        queryBuilder.append("id = ");
         queryBuilder.append(id);
         return queryBuilder.toString();
     }
 
     @Override
     public String deleteById(Class<?> type, Serializable id) {
-        validateEntityNotNul(type);
+        notNullValidation(type);
         StringBuilder queryBuilder = new StringBuilder("DELETE");
         String tableName = getTableName(type);
         queryBuilder.append(FROM);
         queryBuilder.append(tableName);
         queryBuilder.append(WHERE);
-        queryBuilder.append("id = ");
         queryBuilder.append(id);
         return queryBuilder.toString();
     }
 
     @Override
     public String insert(Object value) {
-        validateEntityNotNul(value);
+        notNullValidation(value);
         Table tableAnnotation = getTable(value.getClass());
         String tableName = getTable(value.getClass(), tableAnnotation);
         String columnNames = getAllColumnNamesFromFields(value.getClass());
@@ -69,17 +67,12 @@ public class DefaultQueryGenerator implements QueryGenerator {
 
     @Override
     public String update(Object value) {
-        validateEntityNotNul(value);
+        notNullValidation(value);
         Table tableAnnotation = getTable(value.getClass());
         String tableName = getTable(value.getClass(), tableAnnotation);
         Object id = getId(value);
-        String fields;
-        try {
-            fields = getFieldsNamesWithContent(value);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-        return "UPDATE " + tableName + " SET " + fields + WHERE + "id = " + id;
+        String fields = getFieldsNamesWithContent(value);
+        return "UPDATE " + tableName + " SET " + fields + WHERE + id;
     }
 
     @DefaultModifierForTests
@@ -111,7 +104,7 @@ public class DefaultQueryGenerator implements QueryGenerator {
         StringJoiner columnValues = new StringJoiner(", ");
         for (Field decleriedField : value.getClass().getDeclaredFields()) {
             Column columnAnnotation = decleriedField.getAnnotation(Column.class);
-            if (columnAnnotation != null && !Objects.equals(columnAnnotation.name(), "id")) {
+            if (columnAnnotation != null) {
                 decleriedField.setAccessible(true);
                 Object fieldValue = decleriedField.get(value);
                 columnValues.add(quoteIfNeeded(fieldValue).toString());
@@ -120,54 +113,47 @@ public class DefaultQueryGenerator implements QueryGenerator {
         return columnValues.toString();
     }
 
+    @SneakyThrows
     @DefaultModifierForTests
     Object getId(Object value) {
+        notNullValidation(value);
         Object id = null;
         Field[] decleriedField = value.getClass().getDeclaredFields();
         for (Field field : decleriedField) {
             Id idAnnotation = field.getAnnotation(Id.class);
             if (idAnnotation != null) {
                 field.setAccessible(true);
-                try {
-                    id = field.get(value);
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException("You don't have access to read this file.");
-                }
+                id = field.get(value);
             }
         }
         return id;
     }
 
     @DefaultModifierForTests
-    String getFieldsNamesWithContent(Object value) throws IllegalAccessException {
-        StringBuilder fieldNamesWithValues = new StringBuilder(); // змінив на білдера
+    String getFieldsNamesWithContent(Object value) {
+        notNullValidation(value);
+        LinkedHashMap<String, String> fieldNamesWithValues = new LinkedHashMap<>();
         for (Field decleriedField : value.getClass().getDeclaredFields()) {
-            StringJoiner fieldValues = new StringJoiner(" = ");
             Column columnAnnotation = decleriedField.getAnnotation(Column.class);
-            // !columnAnnotation.name().contains("id") , метод повертає строку ключ/значення для квері update,
-            // тобто формує строку з полів, але не включно з id, тому що воно має бути в кінці, після команди WHERE.
-            if (columnAnnotation != null && !columnAnnotation.name().contains("id")) {
+            Id idAnnotation = decleriedField.getAnnotation(Id.class);
+            if (columnAnnotation != null && idAnnotation == null) {
                 decleriedField.setAccessible(true);
-                Object fieldName = columnAnnotation.name();
-                Object fieldValue = quoteIfNeeded(decleriedField.get(value));
-                fieldValues.add(fieldName.toString());
-                if (fieldValue == null) {
-                    throw new NullPointerException("Current value is null.");
+                Object fieldValue;
+                try {
+                    fieldValue = decleriedField.get(value);
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
                 }
-                fieldValues.add(fieldValue.toString());
+                fieldNamesWithValues.put(columnAnnotation.name(), quoteIfNeeded(fieldValue).toString());
             }
-            if (fieldNamesWithValues.length() > 0) { // це код залишив, бо інакше поля неправильно розділяються.
-                fieldNamesWithValues.append(", ");
-            }
-            fieldNamesWithValues.append(fieldValues);
         }
-        return fieldNamesWithValues.toString();
+        return fieldNamesWithValues.toString().substring(1, fieldNamesWithValues.toString().length() - 1);
     }
 
     @DefaultModifierForTests
-    void validateEntityNotNul(Object type) {
-        if (type == null) {
-            throw new NullPointerException("Entity can't be null.");
+    void notNullValidation(Object value) {
+        if (value == null) {
+            throw new NullPointerException("Value can't be null.");
         }
     }
 
