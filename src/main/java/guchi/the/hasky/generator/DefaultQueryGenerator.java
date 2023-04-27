@@ -168,21 +168,24 @@ public class DefaultQueryGenerator implements QueryGenerator {
         StringBuilder fieldName = new StringBuilder();
         for (Field decleriedField : type.getDeclaredFields()) {
             Id idAnnotation = decleriedField.getAnnotation(Id.class);
+            Column column = decleriedField.getAnnotation(Column.class);
             if (idAnnotation != null) {
                 decleriedField.setAccessible(true);
-                fieldName.append(decleriedField.getName());
+                fieldName.append(column.name());
                 fieldName.append("=");
             }
         }
         return fieldName.toString();
     }
+
     private String getIdFieldName(Object value) {
         StringBuilder fieldName = new StringBuilder();
         for (Field decleriedField : value.getClass().getDeclaredFields()) {
             Id idAnnotation = decleriedField.getAnnotation(Id.class);
+            Column column = decleriedField.getAnnotation(Column.class);
             if (idAnnotation != null) {
                 decleriedField.setAccessible(true);
-                fieldName.append(decleriedField.getName());
+                fieldName.append(column.name());
                 fieldName.append("=");
             }
         }
