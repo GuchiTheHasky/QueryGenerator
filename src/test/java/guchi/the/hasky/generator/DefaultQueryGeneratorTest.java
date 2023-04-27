@@ -1,13 +1,9 @@
 package guchi.the.hasky.generator;
 
-import guchi.the.hasky.generator.entities.AnotherEntity;
-import guchi.the.hasky.generator.entities.Person;
-import guchi.the.hasky.generator.entities.NotORMEntity;
-import guchi.the.hasky.generator.entities.SomeEntity;
+import guchi.the.hasky.generator.entities.*;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -32,7 +28,7 @@ public class DefaultQueryGeneratorTest {
     @DisplayName("Test, generate query find person by id from table check expected & actual value.")
     public void testGenerateQueryFindEntityById() {
         String expected = "SELECT person_id, person_name, person_salary FROM People WHERE id=123";
-        String actual = generator.findById(Person.class, "123");
+        String actual = generator.findById(Person.class, 123);
         assertEquals(expected, actual);
     }
 
@@ -43,7 +39,7 @@ public class DefaultQueryGeneratorTest {
     @DisplayName("Test, generate query delete entity by id from class check expected & actual value;")
     public void testGenerateQueryDeleteEntityById() {
         String expected = "DELETE FROM People WHERE id=123";
-        String actual = generator.deleteById(Person.class, "123");
+        String actual = generator.deleteById(Person.class, 123);
         assertEquals(expected, actual);
     }
 
@@ -121,7 +117,7 @@ public class DefaultQueryGeneratorTest {
     }
 
     @Test
-    @DisplayName("Test, throw exception if entity type is null")
+    @DisplayName("Test, throw exception if entity type is null.")
     public void testThrowExceptionIfEntityTypeIsNull() {
         Throwable thrown = assertThrows(NullPointerException.class, () -> {
             generator.notNullValidation(null);
@@ -130,5 +126,31 @@ public class DefaultQueryGeneratorTest {
         String expected = "Value can't be null.";
         String actual = thrown.getMessage();
         assertEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("Test, generate all SQL statements.")
+    public void testGenerateAllSQLStatements() {
+        String actualFindAll = generator.findAll(User.class);
+        String expectedFindAll = "SELECT passport_number, name, age FROM Users";
+        assertEquals(actualFindAll, expectedFindAll);
+
+        String actualFindById = generator.findById(User.class, 777);
+        String expectedFindByID = "SELECT passport_number, name, age FROM Users WHERE passportNumber=777";
+        assertEquals(actualFindById, expectedFindByID);
+
+        String actualDeleteById = generator.deleteById(User.class, 321);
+        String expectedDeleteById = "DELETE FROM Users WHERE passportNumber=321";
+        assertEquals(actualDeleteById, expectedDeleteById);
+
+        User user = new User(4458, "Valdemar", 44);
+        String actualInsert = generator.insert(user);
+        String expectedInsert = "INSERT INTO Users (passport_number, name, age) VALUES (4458, 'Valdemar', 44)";
+        assertEquals(actualInsert, expectedInsert);
+
+        User updatedUser = new User(4458, "Zigmund", 56);
+        String actualUpdate = generator.update(updatedUser);
+        String expectedUpdate = "UPDATE Users SET name='Zigmund', age=56 WHERE passportNumber=4458";
+        assertEquals(actualUpdate, expectedUpdate);
     }
 }

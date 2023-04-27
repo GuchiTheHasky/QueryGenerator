@@ -14,7 +14,7 @@ import java.util.StringJoiner;
 
 public class DefaultQueryGenerator implements QueryGenerator {
     private final String SELECT = "SELECT ";
-    private final String WHERE = " WHERE id=";
+    private final String WHERE = " WHERE ";
     private final String FROM = " FROM ";
 
     @Override
@@ -34,12 +34,15 @@ public class DefaultQueryGenerator implements QueryGenerator {
         notNullValidation(type);
         StringBuilder queryBuilder = new StringBuilder(SELECT);
         String columnNames = getAllColumnNamesFromFields(type);
+        String tableName = getTableName(type);
+        String idFieldName = getIdFieldName(type);
+        Object filteredId = quoteIfNeeded(id);
         queryBuilder.append(columnNames);
         queryBuilder.append(FROM);
-        String tableName = getTableName(type);
         queryBuilder.append(tableName);
         queryBuilder.append(WHERE);
-        queryBuilder.append(id);
+        queryBuilder.append(idFieldName);
+        queryBuilder.append(filteredId);
         return queryBuilder.toString();
     }
 
@@ -48,10 +51,13 @@ public class DefaultQueryGenerator implements QueryGenerator {
         notNullValidation(type);
         StringBuilder queryBuilder = new StringBuilder("DELETE");
         String tableName = getTableName(type);
+        String idFieldName = getIdFieldName(type);
+        Object filteredId = quoteIfNeeded(id);
         queryBuilder.append(FROM);
         queryBuilder.append(tableName);
         queryBuilder.append(WHERE);
-        queryBuilder.append(id);
+        queryBuilder.append(idFieldName);
+        queryBuilder.append(filteredId);
         return queryBuilder.toString();
     }
 
@@ -72,7 +78,8 @@ public class DefaultQueryGenerator implements QueryGenerator {
         String tableName = getTable(value.getClass(), tableAnnotation);
         Object id = getId(value);
         String fields = getFieldsNamesWithContent(value);
-        return "UPDATE " + tableName + " SET " + fields + WHERE + id;
+        String idFieldName = getIdFieldName(value);
+        return "UPDATE " + tableName + " SET " + fields + WHERE + idFieldName + id;
     }
 
     @DefaultModifierForTests
@@ -157,6 +164,31 @@ public class DefaultQueryGenerator implements QueryGenerator {
         }
     }
 
+    private String getIdFieldName(Class<?> type) {
+        StringBuilder fieldName = new StringBuilder();
+        for (Field decleriedField : type.getDeclaredFields()) {
+            Id idAnnotation = decleriedField.getAnnotation(Id.class);
+            if (idAnnotation != null) {
+                decleriedField.setAccessible(true);
+                fieldName.append(decleriedField.getName());
+                fieldName.append("=");
+            }
+        }
+        return fieldName.toString();
+    }
+    private String getIdFieldName(Object value) {
+        StringBuilder fieldName = new StringBuilder();
+        for (Field decleriedField : value.getClass().getDeclaredFields()) {
+            Id idAnnotation = decleriedField.getAnnotation(Id.class);
+            if (idAnnotation != null) {
+                decleriedField.setAccessible(true);
+                fieldName.append(decleriedField.getName());
+                fieldName.append("=");
+            }
+        }
+        return fieldName.toString();
+    }
+
     private Object quoteIfNeeded(Object value) {
         if (value != null) {
             if (value instanceof String) {
@@ -174,5 +206,7 @@ public class DefaultQueryGenerator implements QueryGenerator {
     private String getTable(Class<?> type, Table tableAnnotation) {
         return tableAnnotation.name().isEmpty() ? type.getSimpleName() : tableAnnotation.name();
     }
+
+
 }
 
