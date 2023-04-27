@@ -171,8 +171,8 @@ public class DefaultQueryGenerator implements QueryGenerator {
         return getTable(type, tableAnnotation);
     }
 
-    private String getTable(Class<?> clazz, Table tableAnnotation) {
-        return tableAnnotation.name().isEmpty() ? clazz.getSimpleName() : tableAnnotation.name();
+    private String getTable(Class<?> type, Table tableAnnotation) {
+        return tableAnnotation.name().isEmpty() ? type.getSimpleName() : tableAnnotation.name();
     }
 }
 
