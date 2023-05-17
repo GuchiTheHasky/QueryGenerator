@@ -16,7 +16,7 @@ public class DefaultQueryGeneratorTest {
     @Test
     @DisplayName("Test, generate query select current columns from table check expected & actual value.")
     public void testGenerateQuerySelectColumnsFromTable() {
-        String expected = "SELECT person_id, person_name, person_salary FROM People";
+        String expected = "SELECT person_id, person_name, person_salary FROM People;";
         String actual = generator.findAll(Person.class);
         assertEquals(expected, actual);
     }
@@ -27,7 +27,7 @@ public class DefaultQueryGeneratorTest {
     @Test
     @DisplayName("Test, generate query find person by id from table check expected & actual value.")
     public void testGenerateQueryFindEntityById() {
-        String expected = "SELECT person_id, person_name, person_salary FROM People WHERE person_id=123";
+        String expected = "SELECT person_id, person_name, person_salary FROM People WHERE person_id=123;";
         String actual = generator.findById(Person.class, 123);
         assertEquals(expected, actual);
     }
@@ -38,7 +38,7 @@ public class DefaultQueryGeneratorTest {
     @Test
     @DisplayName("Test, generate query delete entity by id from class check expected & actual value;")
     public void testGenerateQueryDeleteEntityById() {
-        String expected = "DELETE FROM People WHERE person_id=123";
+        String expected = "DELETE FROM People WHERE person_id=123;";
         String actual = generator.deleteById(Person.class, 123);
         assertEquals(expected, actual);
     }
@@ -51,7 +51,7 @@ public class DefaultQueryGeneratorTest {
     public void testGenerateQueryInsertEntityInTable() {
         Person person = new Person(111, "Obi Van Kenobi", 12000);
         String expected = "INSERT INTO People (person_id, person_name, person_salary) " +
-                "VALUES (111, 'Obi Van Kenobi', 12000.0)";
+                "VALUES (111, 'Obi Van Kenobi', 12000.0);";
         String actual = generator.insert(person);
         assertEquals(expected, actual);
     }
@@ -63,7 +63,7 @@ public class DefaultQueryGeneratorTest {
     @DisplayName("Test, generate update object check expected & actual value.")
     public void testGenerateQueryUpdateEntityById() {
         Person person = new Person(777, "Obi Van Kenobi", 12000);
-        String expected = "UPDATE People SET person_name='Obi Van Kenobi', person_salary=12000.0 WHERE person_id=777";
+        String expected = "UPDATE People SET person_name='Obi Van Kenobi', person_salary=12000.0 WHERE person_id=777;";
         String actual = generator.update(person);
         assertEquals(expected, actual);
     }
@@ -132,25 +132,25 @@ public class DefaultQueryGeneratorTest {
     @DisplayName("Test, generate all SQL statements.")
     public void testGenerateAllSQLStatements() {
         String actualFindAll = generator.findAll(User.class);
-        String expectedFindAll = "SELECT passport_number, name, age FROM Users";
+        String expectedFindAll = "SELECT passport_number, name, age FROM Users;";
         assertEquals(actualFindAll, expectedFindAll);
 
         String actualFindById = generator.findById(User.class, 777);
-        String expectedFindByID = "SELECT passport_number, name, age FROM Users WHERE passport_number=777";
+        String expectedFindByID = "SELECT passport_number, name, age FROM Users WHERE passport_number=777;";
         assertEquals(actualFindById, expectedFindByID);
 
         String actualDeleteById = generator.deleteById(User.class, 321);
-        String expectedDeleteById = "DELETE FROM Users WHERE passport_number=321";
+        String expectedDeleteById = "DELETE FROM Users WHERE passport_number=321;";
         assertEquals(actualDeleteById, expectedDeleteById);
 
         User user = new User(4458, "Valdemar", 44);
         String actualInsert = generator.insert(user);
-        String expectedInsert = "INSERT INTO Users (passport_number, name, age) VALUES (4458, 'Valdemar', 44)";
+        String expectedInsert = "INSERT INTO Users (passport_number, name, age) VALUES (4458, 'Valdemar', 44);";
         assertEquals(actualInsert, expectedInsert);
 
         User updatedUser = new User(4458, "Zigmund", 56);
         String actualUpdate = generator.update(updatedUser);
-        String expectedUpdate = "UPDATE Users SET name='Zigmund', age=56 WHERE passport_number=4458";
+        String expectedUpdate = "UPDATE Users SET name='Zigmund', age=56 WHERE passport_number=4458;";
         assertEquals(actualUpdate, expectedUpdate);
     }
 }
