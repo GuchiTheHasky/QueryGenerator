@@ -26,6 +26,7 @@ public class DefaultQueryGenerator implements QueryGenerator {
         queryBuilder.append(columnNames);
         queryBuilder.append(FROM);
         queryBuilder.append(tableName);
+        queryBuilder.append(';');
         return queryBuilder.toString();
     }
 
@@ -43,6 +44,7 @@ public class DefaultQueryGenerator implements QueryGenerator {
         queryBuilder.append(WHERE);
         queryBuilder.append(idFieldName);
         queryBuilder.append(filteredId);
+        queryBuilder.append(';');
         return queryBuilder.toString();
     }
 
@@ -58,6 +60,7 @@ public class DefaultQueryGenerator implements QueryGenerator {
         queryBuilder.append(WHERE);
         queryBuilder.append(idFieldName);
         queryBuilder.append(filteredId);
+        queryBuilder.append(';');
         return queryBuilder.toString();
     }
 
@@ -68,7 +71,7 @@ public class DefaultQueryGenerator implements QueryGenerator {
         String tableName = getTable(value.getClass(), tableAnnotation);
         String columnNames = getAllColumnNamesFromFields(value.getClass());
         String columnValues = getColumnValues(value);
-        return "INSERT INTO " + tableName + " (" + columnNames + ") VALUES (" + columnValues + ")";
+        return "INSERT INTO " + tableName + " (" + columnNames + ") VALUES (" + columnValues + ");";
     }
 
     @Override
@@ -79,7 +82,7 @@ public class DefaultQueryGenerator implements QueryGenerator {
         Object id = getId(value);
         String fields = getFieldsNamesWithContent(value);
         String idFieldName = getIdFieldName(value);
-        return "UPDATE " + tableName + " SET " + fields + WHERE + idFieldName + id;
+        return "UPDATE " + tableName + " SET " + fields + WHERE + idFieldName + id + ';';
     }
 
     @DefaultModifierForTests
@@ -193,10 +196,12 @@ public class DefaultQueryGenerator implements QueryGenerator {
     }
 
     private Object quoteIfNeeded(Object value) {
-        if (value != null) {
-            if (value instanceof String) {
+        try {
+            if (value instanceof CharSequence) {
                 return "'" + value + "'";
             }
+        } catch (NullPointerException ignored) {
+
         }
         return value;
     }
@@ -209,7 +214,5 @@ public class DefaultQueryGenerator implements QueryGenerator {
     private String getTable(Class<?> type, Table tableAnnotation) {
         return tableAnnotation.name().isEmpty() ? type.getSimpleName() : tableAnnotation.name();
     }
-
-
 }
 

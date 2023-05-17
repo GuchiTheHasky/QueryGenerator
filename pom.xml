@@ -7,6 +7,8 @@
 
     <properties>
         <java.version>19</java.version>
+        <junit.jupiter.version>5.9.2</junit.jupiter.version>
+        <lombok.version>1.18.26</lombok.version>
     </properties>
 
     <dependencies>
@@ -14,14 +16,14 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>5.8.2</version>
+            <version>${junit.jupiter.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.26</version>
+            <version>${lombok.version}</version>
             <scope>provided</scope>
         </dependency>
 
