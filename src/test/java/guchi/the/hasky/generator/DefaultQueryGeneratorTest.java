@@ -122,6 +122,7 @@ public class DefaultQueryGeneratorTest {
         Throwable thrown = assertThrows(NullPointerException.class, () -> {
             generator.notNullValidation(null);
         });
+
         assertNotNull(thrown.getMessage());
         String expected = "Value can't be null.";
         String actual = thrown.getMessage();
