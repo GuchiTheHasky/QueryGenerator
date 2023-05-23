@@ -205,7 +205,7 @@ public class DefaultQueryGenerator implements QueryGenerator {
         }
         return value;
     }
-
+    
     private String getTableName(Class<?> type) {
         Table tableAnnotation = getTable(type);
         return getTable(type, tableAnnotation);
